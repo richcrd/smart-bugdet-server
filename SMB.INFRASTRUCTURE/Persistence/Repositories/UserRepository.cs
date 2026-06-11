@@ -20,4 +20,14 @@ public class UserRepository(AppDbContext dbContext) : IUserRepository
     {
         await dbContext.Users.AddAsync(user);
     }
+
+    public async Task<User?> GetByEmailOrPhone(string identifier)
+    {
+        return await dbContext.Users
+            .Include(x => x.People)
+            .Include(x => x.Status)
+            .FirstOrDefaultAsync(x =>
+                x.Email == identifier ||
+                x.PhoneNumber == identifier);
+    }
 }

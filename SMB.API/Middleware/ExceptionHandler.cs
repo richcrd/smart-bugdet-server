@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Diagnostics;
 using SMB.API.Contracts;
 using SMB.APPLICATION.Exceptions;
-using System.ComponentModel.DataAnnotations;
 
 namespace SMB.API.Middleware;
 
@@ -11,7 +10,7 @@ public class ExceptionHandler(ILogger<ExceptionHandler> logger) : IExceptionHand
     {
         var (statusCode, message) = exception switch
         {
-            APPLICATION.Exceptions.ValidationException =>
+            ValidationException =>
                 (StatusCodes.Status400BadRequest, exception.Message),
 
             DuplicateResourceException =>

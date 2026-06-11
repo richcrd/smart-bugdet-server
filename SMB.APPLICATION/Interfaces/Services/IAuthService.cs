@@ -5,4 +5,5 @@ namespace SMB.APPLICATION.Interfaces.Services;
 public interface IAuthService
 {
     Task<RegisterUserResponse> Register(RegisterUserRequest request);
+    Task<LoginResponse> Login(LoginRequest request);
 }

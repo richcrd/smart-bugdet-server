@@ -23,4 +23,19 @@ public class AuthController(IAuthService service) : ControllerBase
 
         return StatusCode(StatusCodes.Status201Created, response);
     }
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    {
+        var result = await service.Login(request);
+
+        var response = new Answer<LoginResponse>
+        {
+            Message = "Inicio de sesión exitoso",
+            Response = result,
+            Code = StatusCodes.Status200OK
+        };
+
+        return Ok(response);
+    }
 }

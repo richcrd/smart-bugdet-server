@@ -4,6 +4,7 @@ using SMB.APPLICATION.Exceptions;
 using SMB.APPLICATION.Interfaces.Repositories;
 using SMB.APPLICATION.Interfaces.Services;
 using SMB.DOMAIN.Entities;
+using Status = SMB.DOMAIN.Constants.Status;
 
 namespace SMB.APPLICATION.Services;
 
@@ -11,7 +12,8 @@ public class AuthService(
     IUserRepository userRepository,
     ICatalogRepository catalogRepository,
     IUnitOfWork unitOfWork,
-    IPasswordHasher passwordHasher) : IAuthService
+    IPasswordHasher passwordHasher,
+    ITokenService tokenService) : IAuthService
 {
     public async Task<RegisterUserResponse> Register(RegisterUserRequest request)
     {
@@ -51,7 +53,7 @@ public class AuthService(
         var language = await catalogRepository.GetLanguageByCode(languageCode)
                        ?? throw new ResourceNotFoundException("El idioma no existe");
         
-        var status = await catalogRepository.GetStatusByCode("ACTIVE")
+        var status = await catalogRepository.GetStatusByCode(Status.Active)
                        ?? throw new ResourceNotFoundException("El estado 'activo' no existe");
 
         var now = DateTime.UtcNow;
@@ -110,6 +112,44 @@ public class AuthService(
             FullName = $"{people.FirstName} {people.LastName}",
             UserName = user.Username,
             Email = user.Email
+        };
+    }
+
+    public async Task<LoginResponse> Login(LoginRequest request)
+    {
+        var identifier = request.EmailOrPhone.Trim().ToLowerInvariant();
+
+        var user = await userRepository.GetByEmailOrPhone(identifier);
+
+        if (user is null || !passwordHasher.Verify(request.Password, user.Password))
+        {
+            throw new InvalidCredentialsException();
+        }
+
+        if (user.Status.Code != Status.Active)
+        {
+            throw new ForbiddenException("El usuario está bloqueado o inactivo.");
+        }
+
+        var accessToken = tokenService.CreateAccessToken(user);
+        var refreshToken = tokenService.CreateRefreshToken();
+        var accessTokenExpiresAt = tokenService.GetAccessTokenExpiration();
+
+        var session = new UserSession
+        {
+            User = user,
+            RefreshToken = refreshToken,
+            ExpiresAt = DateTime.UtcNow.AddDays(30),
+            CreatedAt = DateTime.UtcNow
+        };
+        
+        user.Sessions.Add(session);
+
+        return new LoginResponse()
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            AccessTokenExpiresAt = accessTokenExpiresAt
         };
     }
 }
