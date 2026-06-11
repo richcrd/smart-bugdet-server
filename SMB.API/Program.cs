@@ -1,7 +1,7 @@
+using System.Security.Claims;
 using System.Text;
 using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using SMB.API.Middleware;
 using SMB.APPLICATION;
@@ -38,7 +38,7 @@ builder.Services
             ValidateAudience = true,
             ValidAudience = jwtOptions.Audience,
             
-            NameClaimType = JwtRegisteredClaimNames.UniqueName
+            NameClaimType = ClaimTypes.Name
         };
     });
 
