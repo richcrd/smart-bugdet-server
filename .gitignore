@@ -1,0 +1,22 @@
+# Build
+bin/
+obj/
+
+# Rider
+.idea/
+*.sln.iml
+*.DotSettings.user
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# MacOS
+.DS_Store
+
+# Logs
+*.log
+
+# Configuración local
+appsettings.Development.json
