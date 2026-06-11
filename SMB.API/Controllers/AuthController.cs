@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using SMB.API.Contracts;
 using SMB.APPLICATION.DTOs.Auth;
 using SMB.APPLICATION.Interfaces.Services;
@@ -11,6 +12,7 @@ namespace SMB.API.Controllers;
 [Route("auth")]
 public class AuthController(IAuthService service) : ControllerBase
 {
+    [EnableRateLimiting("auth")]
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterUserRequest request)
     {
@@ -26,6 +28,7 @@ public class AuthController(IAuthService service) : ControllerBase
         return StatusCode(StatusCodes.Status201Created, response);
     }
 
+    [EnableRateLimiting("auth")]
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
@@ -41,6 +44,7 @@ public class AuthController(IAuthService service) : ControllerBase
         return Ok(response);
     }
 
+    [EnableRateLimiting("auth")]
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request)
     {
