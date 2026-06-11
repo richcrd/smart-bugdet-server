@@ -1,4 +1,6 @@
+using System.Net.Mail;
 using SMB.APPLICATION.DTOs.Auth;
+using SMB.APPLICATION.Exceptions;
 using SMB.APPLICATION.Interfaces.Repositories;
 using SMB.APPLICATION.Interfaces.Services;
 using SMB.DOMAIN.Entities;
@@ -9,32 +11,48 @@ public class AuthService(
     IUserRepository userRepository,
     ICatalogRepository catalogRepository,
     IUnitOfWork unitOfWork,
-    IPasswordHasher passwordHasher,
-    IWalletRepository walletRepository) : IAuthService
+    IPasswordHasher passwordHasher) : IAuthService
 {
     public async Task<RegisterUserResponse> Register(RegisterUserRequest request)
     {
-        var email = request.Email.Trim().ToLower();
+        var email = request.Email.Trim().ToLowerInvariant();
         var username = request.UserName.Trim();
+        var currencyCode = request.CurrencyCode.Trim().ToUpperInvariant();
+        var languageCode = request.LanguageCode.Trim().ToUpperInvariant();
+
+        if (!MailAddress.TryCreate(email, out _))
+        {
+            throw new ValidationException("El email no es válido");
+        }
+
+        if (username.Length is < 3 or > 50)
+        {
+            throw new ValidationException("El usuario debe tener entre 3 y 50 caracteres");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Password) || request.Password.Length < 12)
+        {
+            throw new ValidationException("La contraseña debe tener al menos 12 carácteres");
+        }
 
         if (await userRepository.ExistsByEmail(email))
         {
-            throw new InvalidOperationException("El email ya está registrado");
+            throw new DuplicateResourceException("El email ya está registrado");
         }
         
         if (await userRepository.ExistsByUsername(username))
         {
-            throw new InvalidOperationException("El username ya está registrado");
+            throw new DuplicateResourceException("El usuario ya está registrado");
         }
         
-        var currency = await catalogRepository.GetCurrencyByCode(request.CurrencyCode)
-            ?? throw new InvalidOperationException("La moneda no existe");
+        var currency = await catalogRepository.GetCurrencyByCode(currencyCode)
+            ?? throw new ResourceNotFoundException("La moneda no existe");
         
-        var language = await catalogRepository.GetLanguageByCode(request.LanguageCode)
-                       ?? throw new InvalidOperationException("El idioma no existe");
+        var language = await catalogRepository.GetLanguageByCode(languageCode)
+                       ?? throw new ResourceNotFoundException("El idioma no existe");
         
         var status = await catalogRepository.GetStatusByCode("ACTIVE")
-                       ?? throw new InvalidOperationException("El estado 'activo' no existe");
+                       ?? throw new ResourceNotFoundException("El estado 'activo' no existe");
 
         var now = DateTime.UtcNow;
 
@@ -80,8 +98,8 @@ public class AuthService(
             CreatedAt = now
         };
 
+        user.Wallets.Add(wallet);
         await userRepository.Add(user);
-        await walletRepository.AddAsync(wallet);
         await unitOfWork.SaveChangesAsync();
 
         return new RegisterUserResponse()
