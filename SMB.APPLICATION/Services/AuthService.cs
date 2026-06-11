@@ -13,7 +13,8 @@ public class AuthService(
     ICatalogRepository catalogRepository,
     IUnitOfWork unitOfWork,
     IPasswordHasher passwordHasher,
-    ITokenService tokenService) : IAuthService
+    ITokenService tokenService,
+    IUserSessionRepository sessionRepository) : IAuthService
 {
     public async Task<RegisterUserResponse> Register(RegisterUserRequest request)
     {
@@ -138,18 +139,69 @@ public class AuthService(
         var session = new UserSession
         {
             User = user,
-            RefreshToken = refreshToken,
-            ExpiresAt = DateTime.UtcNow.AddDays(30),
+            RefreshToken = tokenService.HashRefreshToken(refreshToken),
+            DeviceId = request.DeviceId?.Trim(),
+            DeviceName = request.DeviceName?.Trim(),
+            ExpiresAt = tokenService.GetRefreshTokenExpiration(),
             CreatedAt = DateTime.UtcNow
         };
         
         user.Sessions.Add(session);
+        await unitOfWork.SaveChangesAsync();
 
         return new LoginResponse()
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
             AccessTokenExpiresAt = accessTokenExpiresAt
+        };
+    }
+
+    public async Task<LoginResponse> Refresh(RefreshTokenRequest request)
+    {
+        var hash = tokenService.HashRefreshToken(request.RefreshToken);
+
+        var oldSession = await sessionRepository.GetByRefreshToken(hash);
+
+        if (oldSession is null || oldSession.ExpiresAt <= DateTime.UtcNow)
+        {
+            throw new InvalidCredentialsException();
+        }
+
+        if (oldSession.RevokedAt is not null)
+        {
+            await sessionRepository.RevokeAllByUserId(oldSession.UserId);
+            await unitOfWork.SaveChangesAsync();
+
+            throw new InvalidCredentialsException();
+        }
+
+        if (oldSession.User.Status.Code != Status.Active)
+        {
+            throw new ForbiddenException("El usuario está bloqueado o inactivo");
+        }
+
+        var newRefreshToken = tokenService.CreateRefreshToken();
+        oldSession.RevokedAt = DateTime.UtcNow;
+
+        var newSession = new UserSession()
+        {
+            UserId = oldSession.UserId,
+            RefreshToken = tokenService.HashRefreshToken(newRefreshToken),
+            DeviceId = oldSession.DeviceId,
+            DeviceName = oldSession.DeviceName,
+            ExpiresAt = tokenService.GetRefreshTokenExpiration(),
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await sessionRepository.Add(newSession);
+        await unitOfWork.SaveChangesAsync();
+
+        return new LoginResponse()
+        {
+            AccessToken = tokenService.CreateAccessToken(oldSession.User),
+            RefreshToken = newRefreshToken,
+            AccessTokenExpiresAt = tokenService.GetAccessTokenExpiration()
         };
     }
 }

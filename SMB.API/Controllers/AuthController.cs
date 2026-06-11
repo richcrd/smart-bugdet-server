@@ -38,4 +38,19 @@ public class AuthController(IAuthService service) : ControllerBase
 
         return Ok(response);
     }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request)
+    {
+        var result = await service.Refresh(request);
+
+        var response = new Answer<LoginResponse>()
+        {
+            Message = "Token renovado correctamente",
+            Response = result,
+            Code = StatusCodes.Status200OK
+        };
+
+        return Ok(response);
+    }
 }

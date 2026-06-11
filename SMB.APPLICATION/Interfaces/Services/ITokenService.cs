@@ -6,5 +6,7 @@ public interface ITokenService
 {
     string CreateAccessToken(User user);
     string CreateRefreshToken();
+    string HashRefreshToken(string refreshToken);
+    DateTime GetRefreshTokenExpiration();
     DateTime GetAccessTokenExpiration();
 }

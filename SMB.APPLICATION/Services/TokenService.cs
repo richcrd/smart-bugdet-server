@@ -47,4 +47,15 @@ public class TokenService(IOptions<JwtOptions> jwtOptions) : ITokenService
     {
         return DateTime.UtcNow.AddMinutes(_jwtOptions.AccessTokenMinutes);
     }
+
+    public string HashRefreshToken(string refreshToken)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(refreshToken));
+        return Convert.ToHexString(bytes);
+    }
+
+    public DateTime GetRefreshTokenExpiration()
+    {
+        return DateTime.UtcNow.AddDays(7);
+    }
 }

@@ -6,4 +6,5 @@ public interface IAuthService
 {
     Task<RegisterUserResponse> Register(RegisterUserRequest request);
     Task<LoginResponse> Login(LoginRequest request);
+    Task<LoginResponse> Refresh(RefreshTokenRequest request);
 }
