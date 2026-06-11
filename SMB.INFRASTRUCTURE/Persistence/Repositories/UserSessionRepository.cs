@@ -25,9 +25,11 @@ public class UserSessionRepository(AppDbContext dbContext) : IUserSessionReposit
             .Where(x => x.UserId == userId && x.RevokedAt == null)
             .ToListAsync();
 
+        var now = DateTime.UtcNow;
+
         foreach (var session in sessions)
         {
-            session.RevokedAt = DateTime.UtcNow;
+            session.RevokedAt = now;
         }
     }
 }

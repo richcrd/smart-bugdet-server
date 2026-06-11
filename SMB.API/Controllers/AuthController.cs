@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SMB.API.Contracts;
 using SMB.APPLICATION.DTOs.Auth;
@@ -52,5 +54,37 @@ public class AuthController(IAuthService service) : ControllerBase
         };
 
         return Ok(response);
+    }
+
+    [Authorize]
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout([FromBody] RefreshTokenRequest request)
+    {
+        var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        await service.Logout(request.RefreshToken, userId);
+
+        return Ok(new Answer<object?>
+        {
+            Message = "Sesión cerrada correctamente",
+            Response = null,
+            Code = StatusCodes.Status200OK
+        });
+    }
+
+    [Authorize]
+    [HttpPost("logout-all")]
+    public async Task<IActionResult> LogoutAll()
+    {
+        var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        await service.LogoutAll(userId);
+
+        return Ok(new Answer<object?>
+        {
+            Message = "Todas las sesiones fueron cerradas",
+            Response = null,
+            Code = StatusCodes.Status200OK
+        });
     }
 }

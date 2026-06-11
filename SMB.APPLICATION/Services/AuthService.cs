@@ -170,8 +170,7 @@ public class AuthService(
 
         if (oldSession.RevokedAt is not null)
         {
-            await sessionRepository.RevokeAllByUserId(oldSession.UserId);
-            await unitOfWork.SaveChangesAsync();
+            await LogoutAll(oldSession.UserId);
 
             throw new InvalidCredentialsException();
         }
@@ -203,5 +202,28 @@ public class AuthService(
             RefreshToken = newRefreshToken,
             AccessTokenExpiresAt = tokenService.GetAccessTokenExpiration()
         };
+    }
+
+    public async Task Logout(string refreshToken, long userId)
+    {
+        var hash = tokenService.HashRefreshToken(refreshToken);
+        var session = await sessionRepository.GetByRefreshToken(hash);
+
+        if (session is null || session.UserId != userId)
+        {
+            return;
+        }
+
+        if (session.RevokedAt is null)
+        {
+            session.RevokedAt = DateTime.UtcNow;
+            await unitOfWork.SaveChangesAsync();
+        }
+    }
+
+    public async Task LogoutAll(long userId)
+    {
+        await sessionRepository.RevokeAllByUserId(userId);
+        await unitOfWork.SaveChangesAsync();
     }
 }
