@@ -20,3 +20,5 @@ obj/
 
 # Configuración local
 appsettings.Development.json
+.env
+.env.*

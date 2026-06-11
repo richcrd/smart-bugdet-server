@@ -1,5 +1,8 @@
+using DotNetEnv;
 using SMB.APPLICATION;
 using SMB.INFRASTRUCTURE;
+
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 

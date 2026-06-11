@@ -13,9 +13,13 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        var connectionString = configuration.GetConnectionString("SMBConnection");
+        if (string.IsNullOrWhiteSpace(connectionString))
+            throw new InvalidOperationException("Connection string not found");
+        
         services.AddDbContext<AppDbContext>(options =>
         {
-            options.UseNpgsql(configuration.GetConnectionString("SMBConnection"));
+            options.UseNpgsql(connectionString);
         });
 
         services.AddScoped<ICatalogRepository, CatalogRepository>();
