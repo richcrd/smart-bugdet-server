@@ -170,8 +170,8 @@ public class AuthService(
 
         if (oldSession.RevokedAt is not null)
         {
-            await LogoutAll(oldSession.UserId);
-
+            await sessionRepository.RevokeAllByUserId(oldSession.UserId);
+            await unitOfWork.SaveChangesAsync();
             throw new InvalidCredentialsException();
         }
 
