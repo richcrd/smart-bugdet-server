@@ -23,6 +23,11 @@ public class CurrencyConfiguration : IEntityTypeConfiguration<Currency>
         builder.Property(x => x.Symbol)
             .HasMaxLength(10)
             .IsRequired();
+        
+        builder.HasOne(x => x.Status)
+            .WithMany()
+            .HasForeignKey(x => x.StatusId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(x => x.Code).IsUnique();
     }

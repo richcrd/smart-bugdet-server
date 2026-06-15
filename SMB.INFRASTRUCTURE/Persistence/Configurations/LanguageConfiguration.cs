@@ -19,6 +19,11 @@ public class LanguageConfiguration : IEntityTypeConfiguration<Language>
         builder.Property(x => x.Name)
             .HasMaxLength(80)
             .IsRequired();
+        
+        builder.HasOne(x => x.Status)
+            .WithMany()
+            .HasForeignKey(x => x.StatusId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(x => x.Code).IsUnique();
     }

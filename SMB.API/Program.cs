@@ -8,6 +8,7 @@ using SMB.API.Middleware;
 using SMB.APPLICATION;
 using SMB.DOMAIN.Constants;
 using SMB.INFRASTRUCTURE;
+using StatusCodes = Microsoft.AspNetCore.Http.StatusCodes;
 
 var builder = WebApplication.CreateBuilder(args);
 

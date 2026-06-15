@@ -3,8 +3,8 @@ using SMB.APPLICATION.DTOs.Auth;
 using SMB.APPLICATION.Exceptions;
 using SMB.APPLICATION.Interfaces.Repositories;
 using SMB.APPLICATION.Interfaces.Services;
+using SMB.DOMAIN.Constants;
 using SMB.DOMAIN.Entities;
-using Status = SMB.DOMAIN.Constants.Status;
 
 namespace SMB.APPLICATION.Services;
 
@@ -54,7 +54,7 @@ public class AuthService(
         var language = await catalogRepository.GetLanguageByCode(languageCode)
                        ?? throw new ResourceNotFoundException("El idioma no existe");
         
-        var status = await catalogRepository.GetStatusByCode(Status.Active)
+        var status = await catalogRepository.GetStatusByCode(StatusCodes.Active)
                        ?? throw new ResourceNotFoundException("El estado 'activo' no existe");
 
         var now = DateTime.UtcNow;
@@ -127,7 +127,7 @@ public class AuthService(
             throw new InvalidCredentialsException();
         }
 
-        if (user.Status.Code != Status.Active)
+        if (user.Status.Code != StatusCodes.Active)
         {
             throw new ForbiddenException("El usuario está bloqueado o inactivo.");
         }
@@ -175,7 +175,7 @@ public class AuthService(
             throw new InvalidCredentialsException();
         }
 
-        if (oldSession.User.Status.Code != Status.Active)
+        if (oldSession.User.Status.Code != StatusCodes.Active)
         {
             throw new ForbiddenException("El usuario está bloqueado o inactivo");
         }

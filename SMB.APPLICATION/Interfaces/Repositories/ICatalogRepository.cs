@@ -11,4 +11,5 @@ public interface ICatalogRepository
     Task<Subcategory?> GetSubCategoryById(long id);
     Task<PaymentMethod?> GetPaymentMethodById(long id);
     Task<Status?> GetStatusByCode(string code);
+    Task<List<Language>> GetLanguageByActiveStatus();
 }

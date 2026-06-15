@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SMB.APPLICATION.Interfaces.Repositories;
+using SMB.DOMAIN.Constants;
 using SMB.DOMAIN.Entities;
 
 namespace SMB.INFRASTRUCTURE.Persistence.Repositories;
@@ -39,5 +40,12 @@ public class CatalogRepository(AppDbContext dbContext) : ICatalogRepository
     public async Task<Status?> GetStatusByCode(string code)
     {
         return await dbContext.Status.FirstOrDefaultAsync(x => x.Code == code);
+    }
+
+    public async Task<List<Language>> GetLanguageByActiveStatus()
+    {
+        return await dbContext.Languages
+            .Where(l => l.Status.Code == StatusCodes.Active)
+            .ToListAsync();
     }
 }
