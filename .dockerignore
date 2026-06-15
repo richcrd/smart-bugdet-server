@@ -1,0 +1,17 @@
+.git
+.gitignore
+.idea
+.vs
+.DS_Store
+
+**/bin
+**/obj
+
+.env
+.env.*
+!/.env.docker.example
+
+*.user
+*.suo
+*.DotSettings.user
+*.log

@@ -9,9 +9,13 @@ using SMB.APPLICATION;
 using SMB.DOMAIN.Constants;
 using SMB.INFRASTRUCTURE;
 
-Env.Load("../.env");
-
 var builder = WebApplication.CreateBuilder(args);
+
+if (builder.Environment.IsDevelopment())
+{
+    Env.Load("../.env");
+    builder.Configuration.AddEnvironmentVariables();
+}
 
 builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddControllers();

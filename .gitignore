@@ -22,3 +22,4 @@ obj/
 appsettings.Development.json
 .env
 .env.*
+!.env.docker.example
