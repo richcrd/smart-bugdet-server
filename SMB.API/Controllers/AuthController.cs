@@ -29,6 +29,20 @@ public class AuthController(IAuthService service) : ControllerBase
     }
 
     [EnableRateLimiting("auth")]
+    [HttpPost("external-login")]
+    public async Task<IActionResult> ExternalLogin([FromBody] ExternalLoginRequest request)
+    {
+        var result = await service.ExternalLogin(request);
+
+        return Ok(new Answer<LoginResponse>
+        {
+            Message = "Inicio de sesión externo exitoso",
+            Response = result,
+            Code = StatusCodes.Status200OK
+        });
+    }
+
+    [EnableRateLimiting("auth")]
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {

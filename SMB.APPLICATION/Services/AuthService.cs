@@ -14,7 +14,9 @@ public class AuthService(
     IUnitOfWork unitOfWork,
     IPasswordHasher passwordHasher,
     ITokenService tokenService,
-    IUserSessionRepository sessionRepository) : IAuthService
+    IUserSessionRepository sessionRepository,
+    IExternalAuthService externalAuthService,
+    IUserExternalLoginRepository externalLoginRepository) : IAuthService
 {
     public async Task<RegisterUserResponse> Register(RegisterUserRequest request)
     {
@@ -114,6 +116,145 @@ public class AuthService(
             UserName = user.Username,
             Email = user.Email
         };
+    }
+
+    public async Task<LoginResponse> ExternalLogin(ExternalLoginRequest request)
+    {
+        var provider = request.Provider.Trim().ToUpperInvariant();
+        var userInfo = await externalAuthService.VerifyGoogleToken(request.IdToken);
+
+        var existingLogin = await externalLoginRepository.GetByProviderAndUserId(provider, userInfo.ProviderUserId);
+
+        User user;
+
+        if (existingLogin is not null)
+        {
+            user = existingLogin.User;
+        }
+        else
+        {
+            var email = userInfo.Email.Trim().ToLowerInvariant();
+            var existingUser = await userRepository.GetByEmailOrPhone(email);
+
+            if (existingUser is not null)
+            {
+                user = existingUser;
+            }
+            else
+            {
+                var status = await catalogRepository.GetStatusByCode(StatusCodes.Active)
+                             ?? throw new ResourceNotFoundException("El estado 'activo' no existe");
+
+                var currencyCode = request.CurrencyCode.Trim().ToUpperInvariant();
+                var languageCode = request.LanguageCode.Trim().ToUpperInvariant();
+
+                var currency = await catalogRepository.GetCurrencyByCode(currencyCode)
+                               ?? throw new ResourceNotFoundException("La moneda no existe");
+
+                var language = await catalogRepository.GetLanguageByCode(languageCode)
+                               ?? throw new ResourceNotFoundException("El idioma no existe");
+
+                var nameParts = (userInfo.DisplayName ?? email).Split(' ', 2);
+                var now = DateTime.UtcNow;
+
+                var people = new People
+                {
+                    FirstName = nameParts[0],
+                    LastName = nameParts.Length > 1 ? nameParts[1] : "-",
+                    StatusId = status.Id,
+                    CreatedAt = now
+                };
+
+                var username = await GenerateUniqueUsername(email);
+
+                user = new User
+                {
+                    People = people,
+                    Status = status,
+                    StatusId = status.Id,
+                    Username = username,
+                    Email = email,
+                    Password = string.Empty,
+                    CreatedAt = now
+                };
+
+                user.Preference = new UserPreference
+                {
+                    User = user,
+                    DefaultCurrencyId = currency.Id,
+                    LanguageId = language.Id,
+                    DarkModeEnabled = false,
+                    NotificationsEnabled = false,
+                    CreatedAt = now
+                };
+
+                var wallet = new Wallet
+                {
+                    User = user,
+                    StatusId = status.Id,
+                    CurrencyId = currency.Id,
+                    Name = "Cartera Principal",
+                    InitialBalance = 0,
+                    CurrentBalance = 0,
+                    IsDefault = true,
+                    CreatedAt = now
+                };
+
+                user.Wallets.Add(wallet);
+                await userRepository.Add(user);
+            }
+
+            var externalLogin = new UserExternalLogin
+            {
+                User = user,
+                Provider = provider,
+                ProviderUserId = userInfo.ProviderUserId,
+                Email = userInfo.Email,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await externalLoginRepository.Add(externalLogin);
+        }
+
+        if (user.Status.Code != StatusCodes.Active)
+            throw new ForbiddenException("El usuario está bloqueado o inactivo.");
+
+        var accessToken = tokenService.CreateAccessToken(user);
+        var refreshToken = tokenService.CreateRefreshToken();
+
+        var session = new UserSession
+        {
+            User = user,
+            RefreshToken = tokenService.HashRefreshToken(refreshToken),
+            DeviceId = request.DeviceId?.Trim(),
+            DeviceName = request.DeviceName?.Trim(),
+            ExpiresAt = tokenService.GetRefreshTokenExpiration(),
+            CreatedAt = DateTime.UtcNow
+        };
+
+        user.Sessions.Add(session);
+        await unitOfWork.SaveChangesAsync();
+
+        return new LoginResponse
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            AccessTokenExpiresAt = tokenService.GetAccessTokenExpiration()
+        };
+    }
+
+    private async Task<string> GenerateUniqueUsername(string email)
+    {
+        var baseUsername = email.Split('@')[0].ToLowerInvariant();
+        if (baseUsername.Length > 45) baseUsername = baseUsername[..45];
+
+        var username = baseUsername;
+        var counter = 1;
+
+        while (await userRepository.ExistsByUsername(username))
+            username = $"{baseUsername}{counter++}";
+
+        return username;
     }
 
     public async Task<LoginResponse> Login(LoginRequest request)
