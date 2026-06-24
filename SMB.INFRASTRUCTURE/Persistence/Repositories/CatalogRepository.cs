@@ -22,6 +22,11 @@ public class CatalogRepository(AppDbContext dbContext) : ICatalogRepository
         return await dbContext.TransactionTypes.FirstOrDefaultAsync(x => x.Code == code);
     }
 
+    public async Task<TransactionType?> GetTransactionTypeById(long id)
+    {
+        return await dbContext.TransactionTypes.FirstOrDefaultAsync(x => x.Id == id);
+    }
+
     public async Task<Category?> GetCategoryById(long id)
     {
         return await dbContext.Categories.FirstOrDefaultAsync(x => x.Id == id);
