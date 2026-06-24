@@ -31,6 +31,7 @@ public static class DependencyInjection
         services.AddScoped<IUserSessionRepository, UserSessionRepository>();
         services.AddScoped<IUserExternalLoginRepository, UserExternalLoginRepository>();
         services.AddScoped<IExternalAuthService, GoogleAuthService>();
+        services.AddScoped<ISummaryRepository, SummaryRepository>();
 
         return services;
     }
