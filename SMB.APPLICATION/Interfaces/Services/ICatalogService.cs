@@ -6,4 +6,5 @@ namespace SMB.APPLICATION.Interfaces.Services;
 public interface ICatalogService
 {
     Task<List<LanguageResponse>> GetAllLanguages();
+    Task<List<CurrencyResponse>> GetAllCurrencies();
 }

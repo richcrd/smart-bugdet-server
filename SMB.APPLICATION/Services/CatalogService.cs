@@ -18,4 +18,18 @@ public class CatalogService(ICatalogRepository catalogRepository) : ICatalogServ
             Name = l.Name
         }).ToList();
     }
+
+    public async Task<List<CurrencyResponse>> GetAllCurrencies()
+    {
+        var currency = await catalogRepository.GetCurrenciesByActiveStatus();
+
+        return currency.Select(m => new CurrencyResponse()
+        {
+            Id = m.Id,
+            Code = m.Code,
+            Name = m.Name,
+            Symbol = m.Symbol,
+            DecimalPlaces = m.DecimalPlaces
+        }).ToList();
+    }
 }
