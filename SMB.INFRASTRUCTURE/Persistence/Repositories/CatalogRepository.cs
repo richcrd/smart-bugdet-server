@@ -48,4 +48,11 @@ public class CatalogRepository(AppDbContext dbContext) : ICatalogRepository
             .Where(l => l.Status.Code == StatusCodes.Active)
             .ToListAsync();
     }
+
+    public async Task<List<Currency>> GetCurrenciesByActiveStatus()
+    {
+        return await dbContext.Currencies
+            .Where(m => m.Status.Code == StatusCodes.Active)
+            .ToListAsync();
+    }
 }

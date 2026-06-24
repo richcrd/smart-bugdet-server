@@ -23,4 +23,19 @@ public class CatalogController(ICatalogService catalogService) : ControllerBase
 
         return Ok(response);
     }
+
+    [HttpGet("currencies")]
+    public async Task<IActionResult> GetAllCurrencies()
+    {
+        var currencies = await catalogService.GetAllCurrencies();
+
+        var response = new Answer<List<CurrencyResponse>>()
+        {
+            Message = "Se ha recuperado la información correctamente",
+            Response = currencies,
+            Code = StatusCodes.Status200OK
+        };
+
+        return Ok(response);
+    }
 }

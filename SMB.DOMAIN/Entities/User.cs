@@ -22,4 +22,5 @@ public class User : BaseEntity
     public ICollection<Transaction> Transactions { get; set; } = [];
     public ICollection<Category> Categories { get; set; } = [];
     public ICollection<UserPaymentMethod> UserPaymentMethods { get; set; } = [];
+    public ICollection<UserExternalLogin> ExternalLogins { get; set; } = [];
 }

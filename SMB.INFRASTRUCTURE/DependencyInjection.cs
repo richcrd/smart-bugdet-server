@@ -6,6 +6,7 @@ using SMB.APPLICATION.Interfaces.Services;
 using SMB.INFRASTRUCTURE.Persistence;
 using SMB.INFRASTRUCTURE.Persistence.Repositories;
 using SMB.INFRASTRUCTURE.Security;
+using SMB.INFRASTRUCTURE.Services;
 
 namespace SMB.INFRASTRUCTURE;
 
@@ -28,6 +29,9 @@ public static class DependencyInjection
         services.AddScoped<IWalletRepository, WalletRepository>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IUserSessionRepository, UserSessionRepository>();
+        services.AddScoped<IUserExternalLoginRepository, UserExternalLoginRepository>();
+        services.AddScoped<IExternalAuthService, GoogleAuthService>();
+        services.AddScoped<ISummaryRepository, SummaryRepository>();
 
         return services;
     }

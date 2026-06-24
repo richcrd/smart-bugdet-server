@@ -6,7 +6,7 @@ public class People : BaseEntity
 {
     public string FirstName { get; set; } = null!;
     public string LastName { get; set; } = null!;
-    public DateOnly BirthDate { get; set; }
+    public DateOnly? BirthDate { get; set; }
     
     public long StatusId { get; set; }
     public Status Status { get; set; } = null!;
