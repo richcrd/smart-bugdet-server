@@ -25,6 +25,9 @@ public class TransactionRepository(AppDbContext dbContext) : ITransactionReposit
                 TransactionDate     = DateOnly.FromDateTime(t.TransactionDate),
                 TransactionTypeCode = t.TransactionType.Code,
                 TransactionTypeName = t.TransactionType.Name,
+                CategoryName        = t.Category.Name,
+                CategoryIcon        = t.Category.Icon,
+                CategoryColor       = t.Category.Color,
             })
             .ToListAsync();
     }
