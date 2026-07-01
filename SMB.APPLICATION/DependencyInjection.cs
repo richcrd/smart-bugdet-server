@@ -13,6 +13,8 @@ public static class DependencyInjection
         services.AddScoped<ICatalogService, CatalogService>();
         services.AddScoped<ISummaryService, SummaryService>();
         services.AddScoped<ITransactionService, TransactionService>();
+        services.AddScoped<IUserPreferenceService, UserPreferenceService>();
+        services.AddScoped<IWalletService, WalletService>();
         return services;
     }
 }

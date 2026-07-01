@@ -12,9 +12,19 @@ public class CatalogRepository(AppDbContext dbContext) : ICatalogRepository
         return await dbContext.Currencies.FirstOrDefaultAsync(x => x.Code == code);
     }
 
+    public async Task<Currency?> GetCurrencyById(long id)
+    {
+        return await dbContext.Currencies.FirstOrDefaultAsync(x => x.Id == id);
+    }
+
     public async Task<Language?> GetLanguageByCode(string code)
     {
         return await dbContext.Languages.FirstOrDefaultAsync(x => x.Code == code);
+    }
+
+    public async Task<Language?> GetLanguageById(long id)
+    {
+        return await dbContext.Languages.FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public async Task<TransactionType?> GetTransactionTypeByCode(string code)

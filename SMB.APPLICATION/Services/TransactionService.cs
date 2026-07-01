@@ -63,8 +63,24 @@ public class TransactionService(
         return transaction.Id;
     }
 
-    public async Task<List<TransactionResponse>> GetAll(long userId)
+    public async Task<List<TransactionResponse>> GetAll(long userId, long? walletId)
     {
-        return await transactionRepository.GetByUserId(userId);
+        Wallet? wallet;
+
+        if (walletId is not null)
+        {
+            wallet = await walletRepository.GetById(walletId.Value)
+                ?? throw new ResourceNotFoundException("La cartera no existe");
+
+            if (wallet.UserId != userId)
+                throw new ForbiddenException("No tienes acceso a esta cartera");
+        }
+        else
+        {
+            wallet = await walletRepository.GetDefaultByUserId(userId)
+                ?? throw new ResourceNotFoundException("No se encontró una cartera predeterminada");
+        }
+
+        return await transactionRepository.GetByWalletId(wallet.Id);
     }
 }

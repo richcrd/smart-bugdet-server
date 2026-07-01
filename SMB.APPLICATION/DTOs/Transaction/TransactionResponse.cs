@@ -11,4 +11,6 @@ public class TransactionResponse
     public string CategoryName { get; set; } = "";
     public string? CategoryIcon { get; set; } = "";
     public string? CategoryColor { get; set; } = "";
+    public string CurrencyCode { get; set; } = "";
+    public string CurrencySymbol { get; set; } = "";
 }
