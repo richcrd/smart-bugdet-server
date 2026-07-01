@@ -10,6 +10,7 @@ public class UserPreference : BaseEntity
     
     public bool DarkModeEnabled { get; set; }
     public bool NotificationsEnabled { get; set; } = true;
+    public decimal? BalanceAlertThreshold { get; set; }
 
     public User User { get; set; } = null!;
     public Currency DefaultCurrency { get; set; } = null!;

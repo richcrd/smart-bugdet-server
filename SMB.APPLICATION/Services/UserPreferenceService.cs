@@ -21,7 +21,7 @@ public class UserPreferenceService(
 
     public async Task<UserPreferenceResponse> Update(long userId, UpdateUserPreferenceRequest request)
     {
-        if (request.DefaultCurrencyId is null && request.LanguageId is null && request.NotificationsEnabled is null)
+        if (request.DefaultCurrencyId is null && request.LanguageId is null && request.NotificationsEnabled is null && request.BalanceAlertThreshold is null)
         {
             throw new ValidationException("Debe especificar al menos una preferencia para actualizar");
         }
@@ -48,6 +48,11 @@ public class UserPreferenceService(
             preference.NotificationsEnabled = request.NotificationsEnabled.Value;
         }
 
+        if (request.BalanceAlertThreshold is not null)
+        {
+            preference.BalanceAlertThreshold = request.BalanceAlertThreshold.Value;
+        }
+
         preference.UpdatedAt = DateTime.UtcNow;
 
         await unitOfWork.SaveChangesAsync();
@@ -65,5 +70,6 @@ public class UserPreferenceService(
         LanguageCode = preference.Language.Code,
         DarkModeEnabled = preference.DarkModeEnabled,
         NotificationsEnabled = preference.NotificationsEnabled,
+        BalanceAlertThreshold = preference.BalanceAlertThreshold,
     };
 }

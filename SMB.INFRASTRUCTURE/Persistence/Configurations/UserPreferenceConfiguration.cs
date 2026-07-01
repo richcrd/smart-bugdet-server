@@ -28,5 +28,8 @@ public class UserPreferenceConfiguration : IEntityTypeConfiguration<UserPreferen
             .WithMany()
             .HasForeignKey(x => x.LanguageId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(x => x.BalanceAlertThreshold)
+            .HasPrecision(18, 2);
     }
 }

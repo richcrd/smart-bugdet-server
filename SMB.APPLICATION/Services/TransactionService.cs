@@ -11,7 +11,8 @@ public class TransactionService(
     ITransactionRepository transactionRepository,
     IWalletRepository walletRepository,
     ICatalogRepository catalogRepository,
-    IUnitOfWork unitOfWork) : ITransactionService
+    IUnitOfWork unitOfWork,
+    INotificationService notificationService) : ITransactionService
 {
     public async Task<long> Create(CreateTransactionRequest request, long userId)
     {
@@ -59,6 +60,11 @@ public class TransactionService(
         walletRepository.Update(wallet);
         await transactionRepository.Add(transaction);
         await unitOfWork.SaveChangesAsync();
+
+        if (wallet.IsDefault)
+        {
+            await notificationService.CheckBalanceAlert(userId, wallet.CurrentBalance, wallet.Currency.Symbol);
+        }
 
         return transaction.Id;
     }

@@ -98,4 +98,34 @@ public class NotificationService(
 
         logger.LogInformation("Pruned {Count} invalid device token(s)", invalidTokens.Count);
     }
+    
+    public async Task CheckBalanceAlert(long userId, decimal currentBalance, string currencySymbol)
+    {
+        var preference = await preferenceRepository.GetByUserId(userId);
+
+        if (preference is null || !preference.NotificationsEnabled || preference.BalanceAlertThreshold is null)
+        {
+            return;
+        }
+
+        if (currentBalance > preference.BalanceAlertThreshold.Value)
+        {
+            return;
+        }
+
+        var tokens = await deviceRepository.GetTokensByUserId(userId);
+
+        if (tokens.Count == 0)
+        {
+            return;
+        }
+
+        var invalidTokens = await expoPushService.SendAsync(
+            tokens,
+            "Alerta de saldo bajo",
+            $"Tu saldo ({currencySymbol} {currentBalance:N2}) llegó a tu límite configurado.");
+        
+        await PruneInvalidTokens(invalidTokens);
+        logger.LogInformation("Sent balance alert to user {UserId} (balance {Balance})", userId, currentBalance);
+    }
 }
