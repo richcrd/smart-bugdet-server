@@ -7,12 +7,10 @@ namespace SMB.INFRASTRUCTURE.Persistence.Repositories;
 
 public class SummaryRepository(AppDbContext dbContext) : ISummaryRepository
 {
-    private static readonly TimeSpan LocalOffset = TimeSpan.FromHours(-6);
-
     public async Task<DashboardSummaryDto> GetSummaryByUserId(long userId)
     {
-        var localNow = DateTime.UtcNow.Add(LocalOffset);
-        var startMonth = new DateTime(localNow.Year, localNow.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var today = AppTimeZone.TodayUtcMidnight;
+        var startMonth = new DateTime(today.Year, today.Month, 1, 0, 0, 0, DateTimeKind.Utc);
         var endMonth = startMonth.AddMonths(1);
         
         var defaultWallet = await dbContext.Wallets

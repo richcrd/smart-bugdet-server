@@ -21,7 +21,7 @@ public class UserPreferenceService(
 
     public async Task<UserPreferenceResponse> Update(long userId, UpdateUserPreferenceRequest request)
     {
-        if (request.DefaultCurrencyId is null && request.LanguageId is null)
+        if (request.DefaultCurrencyId is null && request.LanguageId is null && request.NotificationsEnabled is null)
         {
             throw new ValidationException("Debe especificar al menos una preferencia para actualizar");
         }
@@ -41,6 +41,11 @@ public class UserPreferenceService(
             var language = await catalogRepository.GetLanguageById(request.LanguageId.Value)
                 ?? throw new ResourceNotFoundException("El idioma no existe");
             preference.LanguageId = language.Id;
+        }
+
+        if (request.NotificationsEnabled is not null)
+        {
+            preference.NotificationsEnabled = request.NotificationsEnabled.Value;
         }
 
         preference.UpdatedAt = DateTime.UtcNow;
