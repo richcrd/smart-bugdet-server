@@ -5,7 +5,9 @@ namespace SMB.APPLICATION.Interfaces.Repositories;
 public interface ICatalogRepository
 {
     Task<Currency?> GetCurrencyByCode(string code);
+    Task<Currency?> GetCurrencyById(long id);
     Task<Language?> GetLanguageByCode(string code);
+    Task<Language?> GetLanguageById(long id);
     Task<TransactionType?> GetTransactionTypeByCode(string code);
     Task<TransactionType?> GetTransactionTypeById(long id);
     Task<Category?> GetCategoryById(long id);

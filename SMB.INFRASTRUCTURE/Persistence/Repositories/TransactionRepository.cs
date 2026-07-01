@@ -12,10 +12,10 @@ public class TransactionRepository(AppDbContext dbContext) : ITransactionReposit
         await dbContext.AddAsync(transaction);
     }
 
-    public async Task<List<TransactionResponse>> GetByUserId(long userId)
+    public async Task<List<TransactionResponse>> GetByWalletId(long walletId)
     {
         return await dbContext.Transactions
-            .Where(t => t.UserId == userId)
+            .Where(t => t.WalletId == walletId)
             .OrderByDescending(t => t.TransactionDate)
             .Select(t => new TransactionResponse
             {
@@ -28,6 +28,8 @@ public class TransactionRepository(AppDbContext dbContext) : ITransactionReposit
                 CategoryName        = t.Category.Name,
                 CategoryIcon        = t.Category.Icon,
                 CategoryColor       = t.Category.Color,
+                CurrencyCode        = t.Currency.Code,
+                CurrencySymbol      = t.Currency.Symbol,
             })
             .ToListAsync();
     }

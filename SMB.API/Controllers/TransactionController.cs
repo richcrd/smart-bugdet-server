@@ -29,10 +29,10 @@ public class TransactionController(ITransactionService service) : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] long? walletId)
     {
         var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        var transactions = await service.GetAll(userId);
+        var transactions = await service.GetAll(userId, walletId);
 
         var result = new Answer<List<TransactionResponse>>
         {
