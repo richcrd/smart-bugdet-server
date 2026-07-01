@@ -46,4 +46,52 @@ public class NotificationController(INotificationService notificationService) : 
 
         return Ok(result);
     }
+
+    [HttpGet]
+    public async Task<IActionResult> GetNotifications()
+    {
+        var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var notifications = await notificationService.GetNotifications(userId);
+
+        var result = new Answer<List<NotificationResponse>>
+        {
+            Message = "Notificaciones obtenidas correctamente",
+            Response = notifications,
+            Code = StatusCodes.Status200OK
+        };
+
+        return Ok(result);
+    }
+
+    [HttpPut("{id:long}/read")]
+    public async Task<IActionResult> MarkAsRead(long id)
+    {
+        var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        await notificationService.MarkAsRead(userId, id);
+
+        var result = new Answer<object?>
+        {
+            Message = "Notificación marcada como leída",
+            Response = null,
+            Code = StatusCodes.Status200OK
+        };
+
+        return Ok(result);
+    }
+
+    [HttpPut("read-all")]
+    public async Task<IActionResult> MarkAllAsRead()
+    {
+        var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        await notificationService.MarkAllAsRead(userId);
+
+        var result = new Answer<object?>
+        {
+            Message = "Notificaciones marcadas como leídas",
+            Response = null,
+            Code = StatusCodes.Status200OK
+        };
+
+        return Ok(result);
+    }
 }

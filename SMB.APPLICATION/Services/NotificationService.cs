@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using SMB.APPLICATION.DTOs.Notifications;
+using SMB.APPLICATION.Exceptions;
 using SMB.APPLICATION.Interfaces.Repositories;
 using SMB.APPLICATION.Interfaces.Services;
 using SMB.DOMAIN.Constants;
@@ -9,6 +10,7 @@ namespace SMB.APPLICATION.Services;
 
 public class NotificationService(
     IUserDeviceRepository deviceRepository,
+    INotificationRepository notificationRepository,
     ITransactionRepository transactionRepository,
     IUserPreferenceRepository preferenceRepository,
     IExpoPushService expoPushService,
@@ -56,20 +58,12 @@ public class NotificationService(
             return false;
         }
 
-        var tokens = await deviceRepository.GetTokensByUserId(userId);
-
-        if (tokens.Count == 0)
-        {
-            return false;
-        }
-
-        var invalidTokens = await expoPushService.SendAsync(
-            tokens,
+        await RecordAndSend(
+            userId,
             "Recordatorio diario",
             "No has registrado movimientos hoy. ¡No olvides anotar tus gastos e ingresos!");
-        await PruneInvalidTokens(invalidTokens);
 
-        logger.LogInformation("Sent daily reminder to user {UserId} ({DeviceCount} device(s))", userId, tokens.Count);
+        logger.LogInformation("Sent daily reminder to user {UserId}", userId);
 
         return true;
     }
@@ -86,19 +80,6 @@ public class NotificationService(
         }
     }
 
-    private async Task PruneInvalidTokens(List<string> invalidTokens)
-    {
-        if (invalidTokens.Count == 0)
-        {
-            return;
-        }
-
-        await deviceRepository.RemoveTokens(invalidTokens);
-        await unitOfWork.SaveChangesAsync();
-
-        logger.LogInformation("Pruned {Count} invalid device token(s)", invalidTokens.Count);
-    }
-    
     public async Task CheckBalanceAlert(long userId, decimal currentBalance, string currencySymbol)
     {
         var preference = await preferenceRepository.GetByUserId(userId);
@@ -113,6 +94,62 @@ public class NotificationService(
             return;
         }
 
+        await RecordAndSend(
+            userId,
+            "Alerta de saldo bajo",
+            $"Tu saldo ({currencySymbol} {currentBalance:N2}) llegó a tu límite configurado.");
+
+        logger.LogInformation("Sent balance alert to user {UserId} (balance {Balance})", userId, currentBalance);
+    }
+
+    public async Task<List<NotificationResponse>> GetNotifications(long userId)
+    {
+        var notifications = await notificationRepository.GetByUserId(userId);
+
+        return notifications.Select(x => new NotificationResponse
+        {
+            Id = x.Id,
+            Title = x.Title,
+            Body = x.Body,
+            IsRead = x.IsRead,
+            CreatedAt = x.CreatedAt
+        }).ToList();
+    }
+
+    public async Task MarkAsRead(long userId, long notificationId)
+    {
+        var notification = await notificationRepository.GetByIdForUser(notificationId, userId);
+
+        if (notification is null)
+        {
+            throw new ResourceNotFoundException("Notificación no encontrada");
+        }
+
+        if (!notification.IsRead)
+        {
+            notification.IsRead = true;
+            notification.ReadAt = DateTime.UtcNow;
+            await unitOfWork.SaveChangesAsync();
+        }
+    }
+
+    public async Task MarkAllAsRead(long userId)
+    {
+        await notificationRepository.MarkAllAsRead(userId);
+        await unitOfWork.SaveChangesAsync();
+    }
+
+    private async Task RecordAndSend(long userId, string title, string body)
+    {
+        await notificationRepository.AddAsync(new Notification
+        {
+            UserId = userId,
+            Title = title,
+            Body = body,
+            CreatedAt = DateTime.UtcNow
+        });
+        await unitOfWork.SaveChangesAsync();
+
         var tokens = await deviceRepository.GetTokensByUserId(userId);
 
         if (tokens.Count == 0)
@@ -120,12 +157,20 @@ public class NotificationService(
             return;
         }
 
-        var invalidTokens = await expoPushService.SendAsync(
-            tokens,
-            "Alerta de saldo bajo",
-            $"Tu saldo ({currencySymbol} {currentBalance:N2}) llegó a tu límite configurado.");
-        
+        var invalidTokens = await expoPushService.SendAsync(tokens, title, body);
         await PruneInvalidTokens(invalidTokens);
-        logger.LogInformation("Sent balance alert to user {UserId} (balance {Balance})", userId, currentBalance);
+    }
+
+    private async Task PruneInvalidTokens(List<string> invalidTokens)
+    {
+        if (invalidTokens.Count == 0)
+        {
+            return;
+        }
+
+        await deviceRepository.RemoveTokens(invalidTokens);
+        await unitOfWork.SaveChangesAsync();
+
+        logger.LogInformation("Pruned {Count} invalid device token(s)", invalidTokens.Count);
     }
 }

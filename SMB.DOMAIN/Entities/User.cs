@@ -24,4 +24,5 @@ public class User : BaseEntity
     public ICollection<UserPaymentMethod> UserPaymentMethods { get; set; } = [];
     public ICollection<UserExternalLogin> ExternalLogins { get; set; } = [];
     public ICollection<UserDevice> Devices { get; set; } = [];
+    public ICollection<Notification> Notifications { get; set; } = [];
 }
