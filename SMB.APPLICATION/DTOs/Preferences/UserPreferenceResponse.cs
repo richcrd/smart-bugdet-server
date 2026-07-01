@@ -9,4 +9,5 @@ public class UserPreferenceResponse
     public string LanguageCode { get; set; } = null!;
     public bool DarkModeEnabled { get; set; }
     public bool NotificationsEnabled { get; set; }
+    public decimal? BalanceAlertThreshold { get; set; }
 }

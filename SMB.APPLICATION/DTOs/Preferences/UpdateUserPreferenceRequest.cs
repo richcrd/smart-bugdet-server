@@ -5,4 +5,5 @@ public class UpdateUserPreferenceRequest
     public long? DefaultCurrencyId { get; set; }
     public long? LanguageId { get; set; }
     public bool? NotificationsEnabled { get; set; }
+    public decimal? BalanceAlertThreshold { get; set; }
 }
