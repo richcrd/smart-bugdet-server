@@ -4,6 +4,7 @@ using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
+using SMB.API.BackgroundServices;
 using SMB.API.Middleware;
 using SMB.APPLICATION;
 using SMB.DOMAIN.Constants;
@@ -83,6 +84,8 @@ builder.Services.AddExceptionHandler<ExceptionHandler>();
 builder.Services.AddProblemDetails();
 
 builder.Services.AddOpenApi();
+
+builder.Services.AddHostedService<DailyReminderBackgroundService>();
 
 var app = builder.Build();
 

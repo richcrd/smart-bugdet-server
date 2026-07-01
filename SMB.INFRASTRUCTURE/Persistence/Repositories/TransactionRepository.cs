@@ -38,4 +38,9 @@ public class TransactionRepository(AppDbContext dbContext) : ITransactionReposit
     {
         throw new NotImplementedException();
     }
+
+    public async Task<bool> ExistsForUserOnDate(long userId, DateTime date)
+    {
+        return await dbContext.Transactions.AnyAsync(t => t.UserId == userId && t.TransactionDate == date);
+    }
 }

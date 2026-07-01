@@ -34,6 +34,9 @@ public static class DependencyInjection
         services.AddScoped<ISummaryRepository, SummaryRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IUserPreferenceRepository, UserPreferenceRepository>();
+        services.AddScoped<IUserDeviceRepository, UserDeviceRepository>();
+        services.AddScoped<IExpoPushService, ExpoPushService>();
+        services.AddHttpClient();
 
         return services;
     }

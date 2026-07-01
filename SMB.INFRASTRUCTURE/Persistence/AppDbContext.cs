@@ -23,6 +23,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Wallet> Wallets => Set<Wallet>();
     public DbSet<Transaction> Transactions => Set<Transaction>();
     public DbSet<UserExternalLogin> UserExternalLogins => Set<UserExternalLogin>();
+    public DbSet<UserDevice> UserDevices => Set<UserDevice>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
