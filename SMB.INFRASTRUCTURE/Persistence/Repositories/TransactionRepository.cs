@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SMB.APPLICATION.DTOs.Transaction;
 using SMB.APPLICATION.Interfaces.Repositories;
+using SMB.DOMAIN.Constants;
 using SMB.DOMAIN.Entities;
 
 namespace SMB.INFRASTRUCTURE.Persistence.Repositories;
@@ -14,8 +15,14 @@ public class TransactionRepository(AppDbContext dbContext) : ITransactionReposit
 
     public async Task<List<TransactionResponse>> GetByWalletId(long walletId)
     {
+        var today = AppTimeZone.TodayUtcMidnight;
+        var tomorrow = today.AddDays(1);
+
         return await dbContext.Transactions
-            .Where(t => t.WalletId == walletId)
+            .Where(t =>
+                t.WalletId == walletId &&
+                t.TransactionDate >= today &&
+                t.TransactionDate < tomorrow)
             .OrderByDescending(t => t.TransactionDate)
             .Select(t => new TransactionResponse
             {
