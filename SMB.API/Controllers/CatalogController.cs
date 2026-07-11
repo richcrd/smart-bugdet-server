@@ -38,4 +38,34 @@ public class CatalogController(ICatalogService catalogService) : ControllerBase
 
         return Ok(response);
     }
+    
+    [HttpGet("categories")]
+    public async Task<IActionResult> GetAllCategories()
+    {
+        var categories = await catalogService.GetAllCategories();
+
+        var response = new Answer<List<CategoriesResponse>>()
+        {
+            Code = StatusCodes.Status200OK,
+            Response = categories,
+            Message = "Se ha recuperado la información correctamente",
+        };
+
+        return Ok(response);
+    }
+
+    [HttpGet("payment-methods")]
+    public async Task<IActionResult> GetAllPaymentMethods()
+    {
+        var paymentMethods = await catalogService.GetAllPaymentMethods();
+
+        var response = new Answer<List<PaymentMethodResponse>>()
+        {
+            Message = "Se ha recuperado la información correctamente",
+            Code = StatusCodes.Status200OK,
+            Response = paymentMethods
+        };
+
+        return Ok(response);
+    }
 }

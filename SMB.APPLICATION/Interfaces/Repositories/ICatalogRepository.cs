@@ -1,3 +1,4 @@
+using SMB.APPLICATION.DTOs.Catalog;
 using SMB.DOMAIN.Entities;
 
 namespace SMB.APPLICATION.Interfaces.Repositories;
@@ -16,4 +17,6 @@ public interface ICatalogRepository
     Task<Status?> GetStatusByCode(string code);
     Task<List<Language>> GetLanguageByActiveStatus();
     Task<List<Currency>> GetCurrenciesByActiveStatus();
+    Task<List<CategoriesResponse>> GetCategoriesByActiveStatus();
+    Task<List<PaymentMethodResponse>> GetPaymentMethodsByActiveStatus();
 }

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SMB.APPLICATION.DTOs.Catalog;
 using SMB.APPLICATION.Interfaces.Repositories;
 using SMB.DOMAIN.Constants;
 using SMB.DOMAIN.Entities;
@@ -69,5 +70,36 @@ public class CatalogRepository(AppDbContext dbContext) : ICatalogRepository
         return await dbContext.Currencies
             .Where(m => m.Status.Code == StatusCodes.Active)
             .ToListAsync();
+    }
+
+    public async Task<List<CategoriesResponse>> GetCategoriesByActiveStatus()
+    {
+        return await dbContext.Categories
+            .Where(c => c.Status.Code == StatusCodes.Active)
+            .Select(c => new CategoriesResponse()
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Icon = c.Icon,
+                Color = c.Color,
+                Subcategories = c.Subcategories
+                    .Select(s => new SubcategoriesResponse()
+                    {
+                        Id = s.Id,
+                        Name = s.Name,
+                        Icon = s.Icon
+                    }).ToList()
+            }).ToListAsync();
+    }
+
+    public async Task<List<PaymentMethodResponse>> GetPaymentMethodsByActiveStatus()
+    {
+        return await dbContext.PaymentMethods
+            .Where(p => p.Status.Code == StatusCodes.Active)
+            .Select(p => new PaymentMethodResponse()
+            {
+                Id = p.Id,
+                Name = p.Name
+            }).ToListAsync();
     }
 }
