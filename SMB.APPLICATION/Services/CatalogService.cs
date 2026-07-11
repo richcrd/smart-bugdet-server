@@ -32,4 +32,15 @@ public class CatalogService(ICatalogRepository catalogRepository) : ICatalogServ
             DecimalPlaces = m.DecimalPlaces
         }).ToList();
     }
+
+    public async Task<List<CategoriesResponse>> GetAllCategories()
+    {
+        return await catalogRepository.GetCategoriesByActiveStatus();
+    }
+    
+    public async Task<List<PaymentMethodResponse>> GetAllPaymentMethods()
+    {
+        return await catalogRepository.GetPaymentMethodsByActiveStatus();
+    }
+
 }
