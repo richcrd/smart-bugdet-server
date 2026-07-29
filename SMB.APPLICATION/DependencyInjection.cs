@@ -16,6 +16,7 @@ public static class DependencyInjection
         services.AddScoped<IUserPreferenceService, UserPreferenceService>();
         services.AddScoped<IWalletService, WalletService>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IUserService, UserService>();
         return services;
     }
 }
