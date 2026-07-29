@@ -30,4 +30,22 @@ public class UserRepository(AppDbContext dbContext) : IUserRepository
                 x.Email == identifier ||
                 x.PhoneNumber == identifier);
     }
+
+    public async Task<User?> GetByIdWithPeople(long id)
+    {
+        return await dbContext.Users
+            .Include(x => x.People)
+            .Include(x => x.Status)
+            .FirstOrDefaultAsync(x => x.Id == id);
+    }
+
+    public async Task<bool> ExistsByEmailForDifferentUser(string email, long userId)
+    {
+        return await dbContext.Users.AnyAsync(x => x.Email == email && x.Id != userId);
+    }
+
+    public async Task<bool> ExistsByUsernameForDifferentUser(string username, long userId)
+    {
+        return await dbContext.Users.AnyAsync(x => x.Username == username && x.Id != userId);
+    }
 }

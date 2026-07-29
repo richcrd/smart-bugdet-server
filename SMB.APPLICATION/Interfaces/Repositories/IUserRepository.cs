@@ -8,4 +8,7 @@ public interface IUserRepository
     Task<bool> ExistsByUsername(string username);
     Task Add(User user);
     Task<User?> GetByEmailOrPhone(string identifier);
+    Task<User?> GetByIdWithPeople(long id);
+    Task<bool> ExistsByEmailForDifferentUser(string email, long userId);
+    Task<bool> ExistsByUsernameForDifferentUser(string username, long userId);
 }
