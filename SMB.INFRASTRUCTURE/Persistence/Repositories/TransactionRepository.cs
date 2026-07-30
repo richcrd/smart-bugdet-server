@@ -47,6 +47,33 @@ public class TransactionRepository(AppDbContext dbContext) : ITransactionReposit
         throw new NotImplementedException();
     }
 
+    public async Task<List<TransactionResponse>> GetByUserAndMonth(long userId, DateTime from, DateTime to)
+    {
+        return await dbContext.Transactions
+            .Where(t =>
+                t.UserId == userId &&
+                t.TransactionDate >= from &&
+                t.TransactionDate < to &&
+                t.TransactionType.Code == TransactionTypesCodes.Expense)
+            .OrderByDescending(t => t.TransactionDate)
+            .Select(t => new TransactionResponse
+            {
+                Id = t.Id,
+                Amount = t.Amount,
+                Description = t.Description ?? "",
+                TransactionDate = DateOnly.FromDateTime(t.TransactionDate),
+                TransactionTypeCode = t.TransactionType.Code,
+                TransactionTypeName = t.TransactionType.Name,
+                CategoryName = t.Category.Name,
+                SubcategoryName = t.Subcategory != null ? t.Subcategory.Name : null,
+                CategoryIcon = t.Category.Icon,
+                CategoryColor = t.Category.Color,
+                CurrencyCode = t.Currency.Code,
+                CurrencySymbol = t.Currency.Symbol,
+            })
+            .ToListAsync();
+    }
+
     public async Task<bool> ExistsForUserOnDate(long userId, DateTime date)
     {
         return await dbContext.Transactions.AnyAsync(t => t.UserId == userId && t.TransactionDate == date);
