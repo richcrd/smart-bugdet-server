@@ -19,7 +19,7 @@ public class WalletRepository(AppDbContext dbContext) : IWalletRepository
 
     public async Task<Wallet?> GetDefaultByUserId(long id)
     {
-        return await dbContext.Wallets.FirstOrDefaultAsync(x => x.UserId == id && x.IsDefault);
+        return await dbContext.Wallets.Include(x => x.Currency).FirstOrDefaultAsync(x => x.UserId == id && x.IsDefault);
     }
 
     public async Task<List<Wallet>> GetActiveByUserId(long userId)

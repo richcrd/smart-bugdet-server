@@ -8,5 +8,6 @@ public interface ITransactionRepository
     Task Add(Transaction transaction);
     Task<List<TransactionResponse>> GetByWalletId(long walletId);
     Task<List<Transaction>> GetByUserAndDateRange(long userId, DateTime from, DateTime to);
+    Task<List<TransactionResponse>> GetByUserAndMonth(long userId, DateTime from, DateTime to);
     Task<bool> ExistsForUserOnDate(long userId, DateTime date);
 }
