@@ -19,4 +19,17 @@ public interface ICatalogRepository
     Task<List<Currency>> GetCurrenciesByActiveStatus();
     Task<List<CategoriesResponse>> GetCategoriesByActiveStatus();
     Task<List<PaymentMethodResponse>> GetPaymentMethodsByActiveStatus();
+
+    Task<List<CategoriesResponse>> GetCategoriesByUserId(long userId);
+    Task<Category?> GetOwnedCategory(long id, long userId);
+    Task<Subcategory?> GetOwnedSubcategory(long id, long userId);
+    Task<List<UserPaymentMethodResponse>> GetUserPaymentMethods(long userId);
+    Task<UserPaymentMethod?> GetUserPaymentMethodById(long id);
+    Task<UserPaymentMethod?> GetUserPaymentMethodByUserIdAndMethodId(long userId, long paymentMethodId);
+    Task<bool> UserPaymentMethodExists(long userId, long paymentMethodId);
+
+    void AddCategory(Category category);
+    void AddSubcategory(Subcategory subcategory);
+    void AddUserPaymentMethod(UserPaymentMethod userPaymentMethod);
+    void RemoveUserPaymentMethod(UserPaymentMethod userPaymentMethod);
 }

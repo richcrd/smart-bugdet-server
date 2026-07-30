@@ -33,6 +33,7 @@ public class TransactionRepository(AppDbContext dbContext) : ITransactionReposit
                 TransactionTypeCode = t.TransactionType.Code,
                 TransactionTypeName = t.TransactionType.Name,
                 CategoryName        = t.Category.Name,
+                SubcategoryName     = t.Subcategory.Name,
                 CategoryIcon        = t.Category.Icon,
                 CategoryColor       = t.Category.Color,
                 CurrencyCode        = t.Currency.Code,
