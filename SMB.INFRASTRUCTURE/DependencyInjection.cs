@@ -37,6 +37,7 @@ public static class DependencyInjection
         services.AddScoped<IUserDeviceRepository, UserDeviceRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IExpoPushService, ExpoPushService>();
+        services.AddScoped<IAnalyticsRepository, AnalyticsRepository>();
         services.AddHttpClient();
 
         return services;
