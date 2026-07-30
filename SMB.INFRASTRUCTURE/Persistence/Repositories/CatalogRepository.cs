@@ -82,12 +82,17 @@ public class CatalogRepository(AppDbContext dbContext) : ICatalogRepository
                 Name = c.Name,
                 Icon = c.Icon,
                 Color = c.Color,
+                UserId = c.UserId,
+                IsSystem = c.IsSystem,
+                TransactionTypeId = c.TransactionTypeId,
                 Subcategories = c.Subcategories
                     .Select(s => new SubcategoriesResponse()
                     {
                         Id = s.Id,
                         Name = s.Name,
-                        Icon = s.Icon
+                        Icon = s.Icon,
+                        UserId = s.UserId,
+                        IsSystem = s.IsSystem
                     }).ToList()
             }).ToListAsync();
     }
@@ -101,5 +106,99 @@ public class CatalogRepository(AppDbContext dbContext) : ICatalogRepository
                 Id = p.Id,
                 Name = p.Name
             }).ToListAsync();
+    }
+
+    public async Task<List<CategoriesResponse>> GetCategoriesByUserId(long userId)
+    {
+        return await dbContext.Categories
+            .Where(c => c.Status.Code == StatusCodes.Active
+                        && (c.IsSystem || c.UserId == userId))
+            .Select(c => new CategoriesResponse()
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Icon = c.Icon,
+                Color = c.Color,
+                UserId = c.UserId,
+                IsSystem = c.IsSystem,
+                TransactionTypeId = c.TransactionTypeId,
+                Subcategories = c.Subcategories
+                    .Where(s => s.Status.Code == StatusCodes.Active
+                                && (s.IsSystem || s.UserId == userId))
+                    .Select(s => new SubcategoriesResponse()
+                    {
+                        Id = s.Id,
+                        Name = s.Name,
+                        Icon = s.Icon,
+                        UserId = s.UserId,
+                        IsSystem = s.IsSystem
+                    }).ToList()
+            }).ToListAsync();
+    }
+
+    public async Task<Category?> GetOwnedCategory(long id, long userId)
+    {
+        return await dbContext.Categories
+            .Include(c => c.Status)
+            .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId && !c.IsSystem);
+    }
+
+    public async Task<Subcategory?> GetOwnedSubcategory(long id, long userId)
+    {
+        return await dbContext.Subcategories
+            .Include(s => s.Status)
+            .FirstOrDefaultAsync(s => s.Id == id && s.UserId == userId && !s.IsSystem);
+    }
+
+    public async Task<List<UserPaymentMethodResponse>> GetUserPaymentMethods(long userId)
+    {
+        return await dbContext.UserPaymentMethods
+            .Where(upm => upm.UserId == userId)
+            .Select(upm => new UserPaymentMethodResponse()
+            {
+                Id = upm.Id,
+                PaymentMethodId = upm.PaymentMethodId,
+                Name = upm.PaymentMethod.Name,
+                Alias = upm.Alias
+            }).ToListAsync();
+    }
+
+    public async Task<UserPaymentMethod?> GetUserPaymentMethodById(long id)
+    {
+        return await dbContext.UserPaymentMethods
+            .Include(upm => upm.PaymentMethod)
+            .FirstOrDefaultAsync(upm => upm.Id == id);
+    }
+
+    public async Task<UserPaymentMethod?> GetUserPaymentMethodByUserIdAndMethodId(long userId, long paymentMethodId)
+    {
+        return await dbContext.UserPaymentMethods
+            .FirstOrDefaultAsync(upm => upm.UserId == userId && upm.PaymentMethodId == paymentMethodId);
+    }
+
+    public async Task<bool> UserPaymentMethodExists(long userId, long paymentMethodId)
+    {
+        return await dbContext.UserPaymentMethods
+            .AnyAsync(upm => upm.UserId == userId && upm.PaymentMethodId == paymentMethodId);
+    }
+
+    public void AddCategory(Category category)
+    {
+        dbContext.Categories.Add(category);
+    }
+
+    public void AddSubcategory(Subcategory subcategory)
+    {
+        dbContext.Subcategories.Add(subcategory);
+    }
+
+    public void AddUserPaymentMethod(UserPaymentMethod userPaymentMethod)
+    {
+        dbContext.UserPaymentMethods.Add(userPaymentMethod);
+    }
+
+    public void RemoveUserPaymentMethod(UserPaymentMethod userPaymentMethod)
+    {
+        dbContext.UserPaymentMethods.Remove(userPaymentMethod);
     }
 }

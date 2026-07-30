@@ -9,6 +9,7 @@ public class TransactionResponse
     public string TransactionTypeCode { get; set; } = "";
     public string TransactionTypeName { get; set; } = "";
     public string CategoryName { get; set; } = "";
+    public string? SubcategoryName { get; set; }
     public string? CategoryIcon { get; set; } = "";
     public string? CategoryColor { get; set; } = "";
     public string CurrencyCode { get; set; } = "";
