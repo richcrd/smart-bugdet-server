@@ -35,9 +35,9 @@ public class AuthService(
             throw new ValidationException("El usuario debe tener entre 3 y 50 caracteres");
         }
 
-        if (string.IsNullOrWhiteSpace(request.Password) || request.Password.Length < 12)
+        if (string.IsNullOrWhiteSpace(request.Password) || request.Password.Length < 8)
         {
-            throw new ValidationException("La contraseña debe tener al menos 12 carácteres");
+            throw new ValidationException("La contraseña debe tener al menos 8 carácteres");
         }
 
         if (await userRepository.ExistsByEmail(email))
